@@ -84,7 +84,7 @@ def resolve_network_storage() -> List[NSMount]:
     mounts.update(mounts_by_local(common))
 
     if lkp.is_login_node:
-        login_group = lkp.cfg.login_groups[util.instance_login_group()] 
+        login_group = lkp.cfg.login_groups[util.instance_login_group()]
         login_ns = [lkp.normalize_ns_mount(m) for m in login_group.network_storage]
         mounts.update(mounts_by_local(login_ns))
 
@@ -109,7 +109,7 @@ def is_controller_mount(mount) -> bool:
 def setup_network_storage():
     """prepare network fs mounts and add them to fstab"""
     log.info("Set up network storage")
-    
+
     all_mounts = resolve_network_storage()
     if lookup().is_controller:
         mounts, _ = separate(is_controller_mount, all_mounts)
@@ -123,7 +123,7 @@ def setup_network_storage():
         fs_type = mount.fs_type
         server_ip = mount.server_ip or ""
         src = mount.remote_mount if fs_type == "gcsfuse" else f"{server_ip}:{mount.remote_mount}"
-        
+
         log.info(f"Setting up mount ({fs_type}) {src} to {local_mount}")
         util.mkdirp(local_mount)
 
@@ -131,8 +131,8 @@ def setup_network_storage():
         if "_netdev" not in mount_options:
             mount_options += ["_netdev"]
         options_line = ",".join(mount_options)
-        
-        
+
+
         fstab_entries.append(f"{src}   {local_mount}     {fs_type}     {options_line}     0 0")
 
     fstab = Path("/etc/fstab")
@@ -206,8 +206,8 @@ def munge_mount_handler():
             f"{mnt.server_ip}:{mnt.remote_mount}",
             str(mnt.local_mount),
         ]
-    # wait max 120s for munge mount
-    timeout = 120
+    # wait max 1200s for munge mount
+    timeout = 1200
     for retry, wait in enumerate(util.backoff_delay(0.5, timeout), 1):
         try:
             run(cmd, timeout=timeout)
@@ -304,7 +304,7 @@ def setup_nfs_exports():
     if is_controller_mount(key_mount):
         # Export key mount as read-only
         to_export[key_mount.remote_mount] = "*(ro,no_subtree_check,no_root_squash)"
-    
+
     if util.should_mount_slurm_bucket():
         mnt = get_slurm_bucket_mount()
         # FSID is required for virtual filesystem that is not based on a device
